@@ -1,12 +1,7 @@
-// Placeholder Firebase configuration.
+// Real Firebase configuration for the "eye-of-curd" project.
 //
-// This file must be replaced with real values before the app will work.
-// Easiest way: `dart pub global activate flutterfire_cli` then run
-// `flutterfire configure` in the project root (requires your own Google
-// login, which this generation environment did not have). Otherwise copy
-// the values by hand from Firebase Console -> Project Settings.
-//
-// See README.md for the full step-by-step setup.
+// Web values copied from Firebase Console -> Project Settings -> Web app.
+// Android values copied from android/app/google-services.json.
 
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
@@ -28,21 +23,23 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'REPLACE_WITH_YOUR_WEB_API_KEY',
-    appId: 'REPLACE_WITH_YOUR_WEB_APP_ID',
-    messagingSenderId: 'REPLACE_WITH_YOUR_SENDER_ID',
-    projectId: 'REPLACE_WITH_YOUR_PROJECT_ID',
-    authDomain: 'REPLACE_WITH_YOUR_PROJECT_ID.firebaseapp.com',
-    databaseURL: 'https://REPLACE_WITH_YOUR_PROJECT_ID-default-rtdb.asia-southeast1.firebasedatabase.app',
-    storageBucket: 'REPLACE_WITH_YOUR_PROJECT_ID.appspot.com',
+    apiKey: 'AIzaSyDfxu_azbvR1DUaHjcHwc02xyJV1OJRBu0',
+    appId: '1:314221901242:web:2a2decd63ee1ce2651d983',
+    messagingSenderId: '314221901242',
+    projectId: 'eye-of-curd',
+    authDomain: 'eye-of-curd.firebaseapp.com',
+    databaseURL:
+        'https://eye-of-curd-default-rtdb.asia-southeast1.firebasedatabase.app',
+    storageBucket: 'eye-of-curd.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'REPLACE_WITH_YOUR_ANDROID_API_KEY',
-    appId: 'REPLACE_WITH_YOUR_ANDROID_APP_ID',
-    messagingSenderId: 'REPLACE_WITH_YOUR_SENDER_ID',
-    projectId: 'REPLACE_WITH_YOUR_PROJECT_ID',
-    databaseURL: 'https://REPLACE_WITH_YOUR_PROJECT_ID-default-rtdb.asia-southeast1.firebasedatabase.app',
-    storageBucket: 'REPLACE_WITH_YOUR_PROJECT_ID.appspot.com',
+    apiKey: 'AIzaSyCYg1_TsZ9Y3rvj3FkLGwrGQ2K6EGF71rs',
+    appId: '1:314221901242:android:37669012ded733ba51d983',
+    messagingSenderId: '314221901242',
+    projectId: 'eye-of-curd',
+    databaseURL:
+        'https://eye-of-curd-default-rtdb.asia-southeast1.firebasedatabase.app',
+    storageBucket: 'eye-of-curd.firebasestorage.app',
   );
 }

@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "314221901242",
+    "firebase_url": "https://eye-of-curd-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "eye-of-curd",
+    "storage_bucket": "eye-of-curd.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:314221901242:android:37669012ded733ba51d983",
+        "android_client_info": {
+          "package_name": "eye.of.crud.com"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCYg1_TsZ9Y3rvj3FkLGwrGQ2K6EGF71rs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
