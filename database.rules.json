@@ -1,0 +1,24 @@
+{
+  "rules": {
+    "allowedUsers": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": false
+      }
+    },
+    "chats": {
+      "$caseId": {
+        ".read": "auth != null && root.child('allowedUsers').child(auth.uid).exists()",
+        ".write": "auth != null && root.child('allowedUsers').child(auth.uid).exists()"
+      }
+    },
+    "presence": {
+      "$caseId": {
+        "$uid": {
+          ".read": "auth != null && root.child('allowedUsers').child(auth.uid).exists()",
+          ".write": "auth != null && root.child('allowedUsers').child(auth.uid).exists() && auth.uid === $uid"
+        }
+      }
+    }
+  }
+}
