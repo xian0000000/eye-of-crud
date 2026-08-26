@@ -92,7 +92,7 @@ class _PhotoCard extends StatelessWidget {
   }
 }
 
-class _NoteCard extends StatelessWidget {
+class _NoteCard extends StatefulWidget {
   final BoardItem item;
   final bool highlighted;
   final ValueChanged<String> onTextChanged;
@@ -103,24 +103,59 @@ class _NoteCard extends StatelessWidget {
   });
 
   @override
+  State<_NoteCard> createState() => _NoteCardState();
+}
+
+class _NoteCardState extends State<_NoteCard> {
+  late final TextEditingController _controller;
+  final _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.item.text);
+  }
+
+  @override
+  void didUpdateWidget(_NoteCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Only pull in remote changes while the field isn't focused, so typing
+    // locally never gets clobbered by the Firestore echo of our own edits.
+    if (!_focusNode.hasFocus && widget.item.text != _controller.text) {
+      _controller.value = _controller.value.copyWith(
+        text: widget.item.text,
+        selection: TextSelection.collapsed(offset: widget.item.text.length),
+        composing: TextRange.empty,
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: Color(item.color),
+        color: Color(widget.item.color),
         boxShadow: const [
           BoxShadow(color: Colors.black45, blurRadius: 6, offset: Offset(2, 3)),
         ],
-        border: highlighted ? Border.all(color: Colors.red, width: 3) : null,
+        border: widget.highlighted ? Border.all(color: Colors.red, width: 3) : null,
       ),
       padding: const EdgeInsets.all(10),
       child: TextField(
-        controller: TextEditingController(text: item.text)
-          ..selection = TextSelection.collapsed(offset: item.text.length),
+        controller: _controller,
+        focusNode: _focusNode,
         maxLines: null,
         expands: true,
         style: const TextStyle(color: Colors.black87, fontSize: 14),
         decoration: const InputDecoration(border: InputBorder.none),
-        onChanged: onTextChanged,
+        onChanged: widget.onTextChanged,
       ),
     );
   }
