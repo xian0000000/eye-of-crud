@@ -1,8 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import '../models/chat_message.dart';
+import '../services/auth_service.dart';
 import '../services/chat_service.dart';
 import '../services/presence_service.dart';
 
@@ -17,26 +17,48 @@ class ChatPanel extends StatefulWidget {
 class _ChatPanelState extends State<ChatPanel> {
   final _chatService = ChatService();
   final _presenceService = PresenceService();
+  final _authService = AuthService();
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
 
-  void _send() {
+  // Created once — see the matching comment in case_board_screen.dart.
+  late final Stream<List<ChatMessage>> _messagesStream;
+  late final Stream<List<PresenceInfo>> _presenceStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _messagesStream = _chatService.messages(widget.caseId);
+    _presenceStream = _presenceService.watch(widget.caseId);
+  }
+
+  Future<void> _send() async {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
-    _chatService.send(widget.caseId, text: text);
     _controller.clear();
+    try {
+      await _chatService.send(widget.caseId, text: text);
+    } catch (e) {
+      // Was previously a fire-and-forget call: a permission/network error
+      // failed silently, which just looked like "chat doesn't work" with
+      // no clue why. Surface it instead.
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal kirim pesan: $e')));
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final myUid = FirebaseAuth.instance.currentUser!.uid;
+    final myUid = _authService.currentUser!.uid;
     return Column(
       children: [
-        _PresenceBar(stream: _presenceService.watch(widget.caseId)),
+        _PresenceBar(stream: _presenceStream),
         const Divider(height: 1),
         Expanded(
           child: StreamBuilder<List<ChatMessage>>(
-            stream: _chatService.messages(widget.caseId),
+            stream: _messagesStream,
             builder: (context, snapshot) {
               final messages = snapshot.data ?? const <ChatMessage>[];
               WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -54,12 +76,15 @@ class _ChatPanelState extends State<ChatPanel> {
                   final m = messages[index];
                   final mine = m.senderUid == myUid;
                   return Align(
-                    alignment:
-                        mine ? Alignment.centerRight : Alignment.centerLeft,
+                    alignment: mine
+                        ? Alignment.centerRight
+                        : Alignment.centerLeft,
                     child: Container(
                       margin: const EdgeInsets.symmetric(vertical: 3),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 6),
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
                       constraints: const BoxConstraints(maxWidth: 260),
                       decoration: BoxDecoration(
                         color: mine
@@ -71,17 +96,24 @@ class _ChatPanelState extends State<ChatPanel> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           if (!mine)
-                            Text(m.senderName,
-                                style: const TextStyle(
-                                    fontSize: 11, fontWeight: FontWeight.bold)),
+                            Text(
+                              m.senderName,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                           Text(m.text),
                           Text(
                             m.ts == 0
                                 ? ''
                                 : DateFormat('HH:mm').format(
-                                    DateTime.fromMillisecondsSinceEpoch(m.ts)),
+                                    DateTime.fromMillisecondsSinceEpoch(m.ts),
+                                  ),
                             style: const TextStyle(
-                                fontSize: 9, color: Colors.black54),
+                              fontSize: 9,
+                              color: Colors.black54,
+                            ),
                           ),
                         ],
                       ),

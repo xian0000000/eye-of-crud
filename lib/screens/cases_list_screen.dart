@@ -18,6 +18,15 @@ class _CasesListScreenState extends State<CasesListScreen> {
   final _joinController = TextEditingController();
   bool _joining = false;
 
+  // Created once — see the matching comment in case_board_screen.dart.
+  late final Stream<List<CaseModel>> _casesStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _casesStream = _caseService.myCases();
+  }
+
   Future<void> _createCase() async {
     final controller = TextEditingController();
     final name = await showDialog<String>(
@@ -31,11 +40,13 @@ class _CasesListScreenState extends State<CasesListScreen> {
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Batal')),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
           FilledButton(
-              onPressed: () => Navigator.pop(context, controller.text),
-              child: const Text('Buat')),
+            onPressed: () => Navigator.pop(context, controller.text),
+            child: const Text('Buat'),
+          ),
         ],
       ),
     );
@@ -54,12 +65,14 @@ class _CasesListScreenState extends State<CasesListScreen> {
     if (!mounted) return;
     setState(() => _joining = false);
     if (error != null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(error)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error)));
     } else {
       _joinController.clear();
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('Berhasil gabung kasus.')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Berhasil gabung kasus.')));
     }
   }
 
@@ -103,15 +116,47 @@ class _CasesListScreenState extends State<CasesListScreen> {
           const Divider(height: 1),
           Expanded(
             child: StreamBuilder<List<CaseModel>>(
-              stream: _caseService.myCases(),
+              stream: _casesStream,
               builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.error_outline,
+                            size: 40,
+                            color: Colors.red,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Gagal muat daftar kasus:\n${snapshot.error}',
+                            textAlign: TextAlign.center,
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'Cek apakah akun ini sudah didaftarkan ke allowedUsers dan rules-nya sudah dipublish.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.black54,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
                 if (!snapshot.hasData) {
                   return const Center(child: CircularProgressIndicator());
                 }
                 final cases = snapshot.data!;
                 if (cases.isEmpty) {
                   return const Center(
-                      child: Text('Belum ada kasus. Buat satu, yuk.'));
+                    child: Text('Belum ada kasus. Buat satu, yuk.'),
+                  );
                 }
                 return ListView.builder(
                   itemCount: cases.length,
@@ -124,7 +169,8 @@ class _CasesListScreenState extends State<CasesListScreen> {
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (_) => CaseBoardScreen(caseModel: c)),
+                          builder: (_) => CaseBoardScreen(caseModel: c),
+                        ),
                       ),
                     );
                   },

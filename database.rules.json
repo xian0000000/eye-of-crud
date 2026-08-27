@@ -19,6 +19,24 @@
           ".write": "auth != null && root.child('allowedUsers').child(auth.uid).exists() && auth.uid === $uid"
         }
       }
+    },
+    "cases": {
+      ".read": "auth != null && root.child('allowedUsers').child(auth.uid).exists()",
+      "$caseId": {
+        ".write": "auth != null && root.child('allowedUsers').child(auth.uid).exists() && ((!data.exists() && newData.child('members').child(auth.uid).exists()) || (data.exists() && newData.exists() && data.child('members').child(auth.uid).exists()) || (data.exists() && newData.exists() && !data.child('members').child(auth.uid).exists() && newData.child('members').child(auth.uid).val() === true && newData.child('name').val() === data.child('name').val() && newData.child('inviteCode').val() === data.child('inviteCode').val() && newData.child('createdBy').val() === data.child('createdBy').val() && newData.child('createdAt').val() === data.child('createdAt').val()))"
+      }
+    },
+    "boardItems": {
+      "$caseId": {
+        ".read": "auth != null && root.child('allowedUsers').child(auth.uid).exists() && root.child('cases').child($caseId).child('members').child(auth.uid).exists()",
+        ".write": "auth != null && root.child('allowedUsers').child(auth.uid).exists() && root.child('cases').child($caseId).child('members').child(auth.uid).exists()"
+      }
+    },
+    "connections": {
+      "$caseId": {
+        ".read": "auth != null && root.child('allowedUsers').child(auth.uid).exists() && root.child('cases').child($caseId).child('members').child(auth.uid).exists()",
+        ".write": "auth != null && root.child('allowedUsers').child(auth.uid).exists() && root.child('cases').child($caseId).child('members').child(auth.uid).exists()"
+      }
     }
   }
 }

@@ -45,10 +45,14 @@ class _LoginScreenState extends State<LoginScreen> {
               children: [
                 const Icon(Icons.travel_explore, size: 56),
                 const SizedBox(height: 12),
-                Text('Eye of Crud',
-                    style: Theme.of(context).textTheme.headlineSmall),
-                const Text('Papan investigasi untuk detektif terpercaya',
-                    style: TextStyle(color: Colors.black54)),
+                Text(
+                  'Eye of Crud',
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                const Text(
+                  'Papan investigasi untuk detektif terpercaya',
+                  style: TextStyle(color: Colors.black54),
+                ),
                 const SizedBox(height: 24),
                 TextField(
                   controller: _emailController,
@@ -66,8 +70,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 if (_error != null)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 12),
-                    child: Text(_error!,
-                        style: const TextStyle(color: Colors.red)),
+                    child: Text(
+                      _error!,
+                      style: const TextStyle(color: Colors.red),
+                    ),
                   ),
                 SizedBox(
                   width: double.infinity,
@@ -77,7 +83,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         ? const SizedBox(
                             width: 20,
                             height: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2))
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
                         : const Text('Masuk'),
                   ),
                 ),

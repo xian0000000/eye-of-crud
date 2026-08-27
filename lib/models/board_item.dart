@@ -1,4 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 enum BoardItemType { photo, note }
@@ -12,6 +11,7 @@ class BoardItem {
   final double height;
   final double rotation;
   final String text;
+  final double fontSize;
   final String? imageBase64;
   final int color;
   final int zIndex;
@@ -26,6 +26,7 @@ class BoardItem {
     required this.height,
     required this.rotation,
     required this.text,
+    required this.fontSize,
     required this.imageBase64,
     required this.color,
     required this.zIndex,
@@ -34,10 +35,9 @@ class BoardItem {
 
   Offset get center => Offset(x + width / 2, y + height / 2);
 
-  factory BoardItem.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = doc.data()!;
+  factory BoardItem.fromMap(String id, Map<dynamic, dynamic> data) {
     return BoardItem(
-      id: doc.id,
+      id: id,
       type: (data['type'] as String? ?? 'note') == 'photo'
           ? BoardItemType.photo
           : BoardItemType.note,
@@ -47,6 +47,7 @@ class BoardItem {
       height: (data['height'] as num? ?? 160).toDouble(),
       rotation: (data['rotation'] as num? ?? 0).toDouble(),
       text: data['text'] as String? ?? '',
+      fontSize: (data['fontSize'] as num? ?? 20).toDouble(),
       imageBase64: data['imageBase64'] as String?,
       color: (data['color'] as num? ?? 0xFFFFF59D).toInt(),
       zIndex: (data['zIndex'] as num? ?? 0).toInt(),

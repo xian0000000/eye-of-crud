@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class BoardConnection {
   final String id;
   final String fromItemId;
@@ -15,10 +13,9 @@ class BoardConnection {
     required this.createdBy,
   });
 
-  factory BoardConnection.fromDoc(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = doc.data()!;
+  factory BoardConnection.fromMap(String id, Map<dynamic, dynamic> data) {
     return BoardConnection(
-      id: doc.id,
+      id: id,
       fromItemId: data['fromItemId'] as String? ?? '',
       toItemId: data['toItemId'] as String? ?? '',
       color: (data['color'] as num? ?? 0xFFE53935).toInt(),

@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
-/// Firestore documents cap out at ~1MiB; base64 inflates size by ~33%,
-/// so keep the raw image comfortably under that after encoding.
+/// Photos are stored inline as base64 in the board item's own RTDB node
+/// (no Cloud Storage, to stay on the free Spark plan) — base64 inflates
+/// size by ~33%, so keep the raw image small to limit database
+/// size/bandwidth usage.
 const int maxImageDocBytes = 900 * 1024;
 
 class EncodedImage {

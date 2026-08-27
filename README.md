@@ -1,6 +1,6 @@
 # Eye of Crud
 
-Papan investigasi digital ala detektif: taro foto, tulis catatan, tarik benang merah buat ngubungin petunjuk, dan chat realtime sesama detektif. Jalan di web (static, hosting gratis di GitHub Pages) dan Android (APK), backend-nya 100% Firebase (serverless, gratisan/Spark plan) — Firestore buat data board, Realtime Database buat chat & presence, Firebase Auth buat login.
+Papan investigasi digital ala detektif: taro foto, tulis catatan, tarik benang merah buat ngubungin petunjuk, dan chat realtime sesama detektif. Jalan di web (static, hosting gratis di GitHub Pages), Android (APK), dan Linux desktop, backend-nya 100% Firebase (serverless, gratisan/Spark plan) — semuanya (cases, board, chat, presence) di Realtime Database, Firebase Auth buat login.
 
 Cuma 2 akun yang bisa login (lu & temen lu). **Gak ada halaman daftar/register di app ini sama sekali** — akun dibikin manual lewat Firebase Console.
 
@@ -22,44 +22,36 @@ Cuma 2 akun yang bisa login (lu & temen lu). **Gak ada halaman daftar/register d
 2. Tab **Sign-in method** → aktifin provider **Email/Password**.
 3. Tab **Users** → **Add user** → masukin email + password buat akun kamu. Ulangi buat akun temen kamu. Cuma 2 akun ini yang boleh ada.
 
-> Catetan keamanan: karena API key Firebase itu publik (nempel di kode client), secara teknis orang lain bisa aja bikin akun baru langsung lewat REST API Firebase Auth kalau dia tau project config-nya. Itu gak masalah di sini — liat bagian **Model Keamanan** di bawah, karena akun baru yang gak terdaftar di `allowedUsers` bakal ditolak sama Firestore & Realtime Database rules, jadi dia gak bisa baca/tulis apa-apa.
+> Catetan keamanan: karena API key Firebase itu publik (nempel di kode client), secara teknis orang lain bisa aja bikin akun baru langsung lewat REST API Firebase Auth kalau dia tau project config-nya. Itu gak masalah di sini — liat bagian **Model Keamanan** di bawah, karena akun baru yang gak terdaftar di `allowedUsers` bakal ditolak sama Realtime Database rules, jadi dia gak bisa baca/tulis apa-apa.
 
-## 4. Bikin Firestore & Realtime Database
+## 4. Bikin Realtime Database
 
-1. **Build → Firestore Database → Create database** → pilih lokasi (misal `asia-southeast1`) → mode **production** (rules kita apply manual, liat langkah 6).
-2. **Build → Realtime Database → Create database** → pilih lokasi → mode **locked** (rules kita apply manual juga).
-3. Catet URL Realtime Database-nya (bentuknya `https://<project-id>-default-rtdb.<region>.firebasedatabase.app`), dipake di `firebase_options.dart`.
+1. **Build → Realtime Database → Create database** → pilih lokasi → mode **locked** (rules kita apply manual, liat langkah 6).
+2. Catet URL-nya (bentuknya `https://<project-id>-default-rtdb.<region>.firebasedatabase.app`), dipake di `firebase_options.dart`.
 
 ## 5. Daftarin 2 UID ke allowlist (WAJIB, ini kunci keamanannya)
 
 Cari UID tiap user: Authentication → Users → kolom **User UID**.
 
-**Di Firestore** (Build → Firestore Database → Data → Start collection):
-- Bikin collection `allowedUsers`.
-- Bikin document dengan **Document ID = UID user itu sendiri** (bukan auto-ID!), isi field `email` (string) dan `name` (string).
-- Ulangi buat UID kedua.
-
 **Di Realtime Database** (Build → Realtime Database → Data):
-- Bikin node `allowedUsers`, di bawahnya bikin key = UID tsb, valuenya `true`.
+- Bikin node `allowedUsers`, di bawahnya bikin key = UID user, valuenya `true`.
 - Ulangi buat UID kedua.
 
 Struktur akhirnya kira-kira:
 ```
-Firestore:  allowedUsers/{uid1} = { email: "...", name: "..." }
-RTDB:       allowedUsers/{uid1} = true
+allowedUsers/{uid1} = true
+allowedUsers/{uid2} = true
 ```
 
 Kalau lupa langkah ini, login bisa sukses tapi board & chat bakal ke-block sama rules (permission-denied) — itu emang disengaja.
 
 ## 6. Pasang rules-nya
 
-Paling gampang: copy-paste manual.
-- Firestore → tab **Rules** → paste isi file `firestore.rules` di repo ini → **Publish**.
-- Realtime Database → tab **Rules** → paste isi file `database.rules.json` → **Publish**.
+Paling gampang: copy-paste manual — Realtime Database → tab **Rules** → paste isi file `database.rules.json` di repo ini → **Publish**.
 
 Atau kalau punya `firebase-tools` (`npm install -g firebase-tools`, lalu `firebase login` & `firebase use --add` buat pilih project ini):
 ```
-firebase deploy --only firestore:rules,database
+firebase deploy --only database
 ```
 
 ## 7. Ganti config Firebase (`lib/firebase_options.dart`)
@@ -74,6 +66,8 @@ flutterfire configure
 Pilih project Firebase yang udah dibuat, pilih platform `android` dan `web`. Perintah ini bakal nge-generate ulang `lib/firebase_options.dart` otomatis dengan config asli.
 
 **Cara manual:** buka Project Settings di Firebase Console, copy value `apiKey`, `appId`, `messagingSenderId`, `projectId`, `authDomain`, `storageBucket` dari config app Web & Android, terus isi manual ke `lib/firebase_options.dart` (ganti tiap `REPLACE_WITH_...`). Jangan lupa isi `databaseURL` sesuai URL Realtime Database dari langkah 4.
+
+> Catetan platform: `firebase_core`/`firebase_auth`/`firebase_database` gak punya implementasi native di Linux desktop. Di platform itu app otomatis pake REST API Firebase langsung (lihat `lib/rest/`) — gak perlu setup tambahan, cuma jalanin `flutter run -d linux`.
 
 ## 8. Jalanin lokal
 
@@ -100,6 +94,6 @@ Hasilnya ada di `build/app/outputs/flutter-apk/app-release.apk`, tinggal install
 ## Model Keamanan (ringkas)
 
 - App cuma punya layar login, gak ada signup. 2 akun dibikin manual di Firebase Console.
-- Firestore & Realtime Database rules sama-sama ngecek `allowedUsers/{uid}` sebelum ngasih akses baca/tulis apapun — jadi biarpun ada orang bikin akun Firebase Auth baru dari luar (misal lewat REST API), akun itu tetep gak bisa akses data karena UID-nya gak ada di `allowedUsers`.
-- Tiap "kasus" (case) punya field `members` (array UID). Board items & connections di dalam satu case cuma bisa diakses sama member case itu. Orang bisa gabung case lewat kode undangan (nambahin UID sendiri ke `members`), tapi field lain di dokumen case gak bisa diutak-atik pas gabung (dijaga di rules pake `diff().affectedKeys()`).
-- Gak ada Cloud Functions atau Firebase Storage dipakai (biar tetep di Spark/free plan) — foto disimpen langsung sebagai base64 string di dalam dokumen Firestore (makanya ukuran foto dikompres & dibatasi ~900KB per foto).
+- Realtime Database rules ngecek `allowedUsers/{uid}` sebelum ngasih akses baca/tulis apapun — jadi biarpun ada orang bikin akun Firebase Auth baru dari luar (misal lewat REST API), akun itu tetep gak bisa akses data karena UID-nya gak ada di `allowedUsers`.
+- Tiap "kasus" (case) di `cases/{caseId}` punya field `members` (map `{uid: true}`, bukan array — RTDB gak punya query array-contains). Board items (`boardItems/{caseId}/{itemId}`) & connections (`connections/{caseId}/{connId}`) cuma bisa diakses sama member case itu (dicek lewat `root.child('cases').child(caseId).child('members')` di rules). Orang bisa gabung case lewat kode undangan (nambahin UID sendiri ke `members`), tapi field lain di case gak bisa diutak-atik pas gabung (dijaga manual di rules, bandingin `data`/`newData`).
+- Gak ada Cloud Functions atau Firebase Storage dipakai (biar tetep di Spark/free plan) — foto disimpen langsung sebagai base64 string di dalam node board item (makanya ukuran foto dikompres & dibatasi ~900KB per foto).
